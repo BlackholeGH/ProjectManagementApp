@@ -17,6 +17,7 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
     private JTextField tSeqProg;
     private JTextField tDuration;
     private JTextField tSetup;
+    //hello
 
     public static void main(String[] args) {
         new GUI();
