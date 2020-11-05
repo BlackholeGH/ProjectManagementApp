@@ -35,6 +35,7 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
         setLayout(new BorderLayout());
         setLocationRelativeTo(null);
 
+        //hello2
         JMenuBar menuBar = new JMenuBar();
         JMenu projectOptions = new JMenu();
         JMenu teamOptions = new JMenu();
