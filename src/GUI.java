@@ -1,12 +1,9 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.*;
 
 /**
- * @author Rishaban
+ * @author Rishaban and Daniel
  */
 public class GUI extends JFrame implements ActionListener, KeyListener {
 
@@ -36,6 +33,7 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
         setLocationRelativeTo(null);
 
         JMenuBar menuBar = new JMenuBar();
+        JMenu taskOptions = new JMenu();
         JMenu projectOptions = new JMenu();
         JMenu teamOptions = new JMenu();
 
@@ -58,6 +56,14 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
         teamOptions.addSeparator();
         teamOptions.add(makeMenuItem("Remove Team", "removeTeam"));
         menuBar.add(teamOptions);
+
+        taskOptions = new JMenu("Task Options");
+        taskOptions.add(makeMenuItem("Create task template", "addTask"));
+        taskOptions.addSeparator();
+        taskOptions.add(makeMenuItem("Delete task template", "removeTask"));
+        taskOptions.addSeparator();
+        taskOptions.add(makeMenuItem("Edit task template", "editTask"));
+        menuBar.add(taskOptions);
 
         options = new JMenu("Options");
         options.add(makeMenuItem("Help", "Help"));
@@ -175,6 +181,47 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
 
         if ("removeTeam".equals(e.getActionCommand())) {
 
+        }
+
+        if ("addTask".equals(e.getActionCommand())) {
+            TaskTemplateEditor tte = new TaskTemplateEditor(false);
+            tte.show();
+        }
+        if ("editTask".equals(e.getActionCommand())) {
+            String[] taskTemplates = TaskKt.getTemplateTasks().keySet().toArray(new String[TaskKt.getTemplateTasks().size()]);
+            if(taskTemplates.length == 0)
+            {
+                JOptionPane.showMessageDialog(null, "There are no task templates to edit.");
+            }
+            else {
+                String selection = (String) JOptionPane.showInputDialog(null, "Choose a task template to edit.", "Selection dialog", JOptionPane.QUESTION_MESSAGE, null, taskTemplates, taskTemplates[0]);
+                TaskTemplateEditor tte = new TaskTemplateEditor(true);
+                tte.getTaskButton().addActionListener(new ActionListener() {
+                    String tSelection = selection;
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        TaskKt.getTemplateTasks().remove(tSelection);
+                        Task newSaveTask = tte.generateTask();
+                        TaskKt.getTemplateTasks().put(newSaveTask.getTaskName(), newSaveTask);
+                        tSelection = newSaveTask.getTaskName();
+                    }
+                });
+                tte.show();
+                tte.ingestTask(TaskKt.getTemplateTasks().get(selection));
+            }
+        }
+        if("removeTask".equals(e.getActionCommand()))
+        {
+            String[] taskTemplates = TaskKt.getTemplateTasks().keySet().toArray(new String[TaskKt.getTemplateTasks().size()]);
+            if(taskTemplates.length == 0)
+            {
+                JOptionPane.showMessageDialog(null, "There are no task templates to remove.");
+            }
+            else {
+                String selection = (String) JOptionPane.showInputDialog(null, "Choose a task template to delete.", "Selection dialog", JOptionPane.QUESTION_MESSAGE, null, taskTemplates, taskTemplates[0]);
+                TaskKt.getTemplateTasks().remove(selection);
+            }
         }
     }
 
