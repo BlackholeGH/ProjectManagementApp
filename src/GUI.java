@@ -8,6 +8,7 @@ import java.awt.event.*;
 public class GUI extends JFrame implements ActionListener, KeyListener {
 
     private JTextArea projectDetails;
+    private JTextArea projectNameDetails;
     private JTextField pName;
     private JTextField pProgress;
     private JTextField tSeq;
@@ -32,7 +33,6 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
         setLayout(new BorderLayout());
         setLocationRelativeTo(null);
 
-        //hello2
         JMenuBar menuBar = new JMenuBar();
         JMenu taskOptions = new JMenu();
         JMenu projectOptions = new JMenu();
@@ -44,13 +44,13 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
         //Menu bar options
         setJMenuBar(menuBar);
 
-        projectOptions = new JMenu("Project Options");
-        projectOptions.add(makeMenuItem("Add Project", "addProject"));
-        projectOptions.addSeparator();
-        projectOptions.add(makeMenuItem("Remove Project", "removeProject"));
-        projectOptions.addSeparator();
-        projectOptions.add(makeMenuItem("Edit Project Details", "editDetails"));
-        menuBar.add(projectOptions);
+        //projectOptions = new JMenu("Project Options");
+        //projectOptions.add(makeMenuItem("Add Project", "addProject"));
+        //projectOptions.addSeparator();
+        //projectOptions.add(makeMenuItem("Remove Project", "removeProject"));
+        //projectOptions.addSeparator();
+        //projectOptions.add(makeMenuItem("Edit Project Details", "editDetails"));
+        //menuBar.add(projectOptions);
 
         teamOptions = new JMenu("Team Options");
         teamOptions.add(makeMenuItem("Edit Team", "editTeam"));
@@ -68,6 +68,8 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
 
         options = new JMenu("Options");
         options.add(makeMenuItem("Help", "Help"));
+        options.addSeparator();
+        options.add(makeMenuItem("Clear Window", "CW"));
         options.addSeparator();
         options.add(makeMenuItem("Exit", "Exit"));
 
@@ -88,6 +90,96 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
         sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         add(sp);
         setVisible(true);
+
+        JFrame projectNames = new JFrame();
+        projectNames.setTitle("Project Details");
+        projectNames.setSize(500,500);
+        projectNames.setLayout(new BorderLayout());
+        projectNames.setLocation(122,270);
+
+        JLabel projectTitle = new JLabel();
+        projectTitle = new JLabel("Project Names:");
+        projectTitle.setFont(new Font("Arial", Font.BOLD, 30));
+        projectTitle.setHorizontalAlignment(JLabel.CENTER);
+        projectNames.add(projectTitle, BorderLayout.NORTH);
+        
+        projectNameDetails = new JTextArea();
+        projectNameDetails.setEditable(false);
+        projectNames.add(projectNameDetails);
+
+        JScrollPane sp2 = new JScrollPane(projectNameDetails);
+        sp2.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        projectNames.add(sp2);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new FlowLayout(FlowLayout.CENTER));
+        panel.add(new JButton("Clear Window"));
+        add(panel, BorderLayout.SOUTH);
+
+
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+        JButton addProject = new JButton("Add Project");
+        addProject.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                JFrame addProject = new JFrame();
+                JPanel panel = new JPanel();
+                JLabel addProjectTitle = new JLabel();
+                addProjectTitle = new JLabel("Add Project");
+                addProjectTitle.setFont(new Font("Arial", Font.BOLD, 15));
+                addProjectTitle.setHorizontalAlignment(JLabel.CENTER);
+                addProject.add(addProjectTitle, BorderLayout.NORTH);
+
+                addProject.setTitle("Add Project");
+                addProject.setSize(500, 380);
+                addProject.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+                addProject.setResizable(false);
+                addProject.setLocationRelativeTo(null);
+
+                JLabel projectName = new JLabel("Project Name:");
+                pName = new JTextField(40);
+                panel.add(projectName);
+                panel.add(pName);
+
+                JLabel projectProgress = new JLabel("Project Progress(%):");
+                pProgress = new JTextField(40);
+                panel.add(projectProgress);
+                panel.add(pProgress);
+
+                JLabel taskSequence = new JLabel("Task Sequence: ");
+                tSeq = new JTextField(40);
+                panel.add(taskSequence);
+                panel.add(tSeq);
+
+                JLabel taskSequenceProgress = new JLabel("Task Sequence Progress(%): ");
+                tSeqProg = new JTextField(40);
+                panel.add(taskSequenceProgress);
+                panel.add(tSeqProg);
+
+                JLabel taskDuration = new JLabel("Task Duration (mins):");
+                tDuration = new JTextField(40);
+                panel.add(taskDuration);
+                panel.add(tDuration);
+
+                JLabel teamSetup = new JLabel("Team Name:");
+                tSetup = new JTextField(40);
+                panel.add(teamSetup);
+                panel.add(tSetup);
+
+                panel.add(makeButton("Submit", "submitButton"));
+
+                addProject.add(panel);
+                addProject.setVisible(true);
+            }
+        });
+        bottomPanel.add(addProject);
+
+        JButton editProject = new JButton("Edit Project Details");
+        bottomPanel.add(editProject);
+        projectNames.add(bottomPanel, BorderLayout.SOUTH);
+
+        projectNames.setVisible(true);
     }
 
     @Override
@@ -96,64 +188,21 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
             JOptionPane.showMessageDialog(null, "");
         }
 
+        if ("CW".equals(e.getActionCommand())) {
+            projectDetails.setText("");
+        }
+
         if ("Exit".equals(e.getActionCommand())) {
             System.exit(0);
         }
 
-        if ("addProject".equals(e.getActionCommand())) {
-            JFrame addProject = new JFrame();
-            JPanel panel = new JPanel();
-            JLabel addProjectTitle = new JLabel();
-            addProjectTitle = new JLabel("Add Project");
-            addProjectTitle.setFont(new Font("Arial", Font.BOLD, 15));
-            addProjectTitle.setHorizontalAlignment(JLabel.CENTER);
-            addProject.add(addProjectTitle, BorderLayout.NORTH);
-
-            addProject.setTitle("Add Project");
-            addProject.setSize(500, 380);
-            addProject.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-            addProject.setResizable(false);
-            addProject.setLocationRelativeTo(null);
-
-            JLabel projectName = new JLabel("Project Name:");
-            pName = new JTextField(40);
-            panel.add(projectName);
-            panel.add(pName);
-
-            JLabel projectProgress = new JLabel("Project Progress(%):");
-            pProgress = new JTextField(40);
-            panel.add(projectProgress);
-            panel.add(pProgress);
-
-            JLabel taskSequence = new JLabel("Task Sequence: ");
-            tSeq = new JTextField(40);
-            panel.add(taskSequence);
-            panel.add(tSeq);
-
-            JLabel taskSequenceProgress = new JLabel("Task Sequence Progress(%): ");
-            tSeqProg = new JTextField(40);
-            panel.add(taskSequenceProgress);
-            panel.add(tSeqProg);
-
-            JLabel taskDuration = new JLabel("Task Duration (mins):");
-            tDuration = new JTextField(40);
-            panel.add(taskDuration);
-            panel.add(tDuration);
-
-            JLabel teamSetup = new JLabel("Team Name:");
-            tSetup = new JTextField(40);
-            panel.add(teamSetup);
-            panel.add(tSetup);
-
-            panel.add(makeButton("Submit", "submitButton"));
-
-            addProject.add(panel);
-            addProject.setVisible(true);
-        }
-
         if ("submitButton".equals(e.getActionCommand())) {
-            projectDetails.append("Project Name: " + pName.getText() + "\n");
-            projectDetails.append("Project Progress(%): " + pProgress.getText() + "%" + "\n");
+            projectNameDetails.append("Project Name: " + pName.getText() + "\n");
+            projectNameDetails.append("Project Progress(%): " + pProgress.getText() + "%" + "\n");
+            projectNameDetails.append("\n");
+
+            //projectDetails.append("Project Name: " + pName.getText() + "\n");
+            //projectDetails.append("Project Progress(%): " + pProgress.getText() + "%" + "\n");
             projectDetails.append("Task Sequence: " + tSeq.getText() + "\n");
             projectDetails.append("Task Sequence Progress(%): " + tSeqProg.getText() + "%" + "\n");
             projectDetails.append("Task Duration (mins): " + tDuration.getText() + " mins" + "\n");
