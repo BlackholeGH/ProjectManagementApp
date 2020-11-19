@@ -53,6 +53,8 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
         //menuBar.add(projectOptions);
 
         teamOptions = new JMenu("Team Options");
+        teamOptions.add(makeMenuItem("Add Team", "addTeam"));
+        teamOptions.addSeparator();
         teamOptions.add(makeMenuItem("Edit Team", "editTeam"));
         teamOptions.addSeparator();
         teamOptions.add(makeMenuItem("Remove Team", "removeTeam"));
@@ -223,6 +225,11 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
 
         if ("editDetails".equals(e.getActionCommand())) {
 
+        }
+
+        if ("addTeam".equals(e.getActionCommand())) {
+            TeamEditor te = new TeamEditor();
+            te.showTeamEditor(null);
         }
 
         if ("editTeam".equals(e.getActionCommand())) {
