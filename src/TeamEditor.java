@@ -14,6 +14,7 @@ public class TeamEditor {
     private JButton addTeamMemberButton;
     private JButton deleteTeamMemberButton;
     private JPanel teamEditorPanel;
+    private JPanel memberTablePanel;
     private JTable teamMemberTable;
     private JScrollPane tableScrollPane;
     private Team teamToMod = null;
@@ -64,7 +65,7 @@ public class TeamEditor {
         Team out = new Team(teamName, teamID);
         for(int i = 0; i < teamMembers.size(); i++) {
             TeamMember tm = teamMembers.get(i);
-            out.getTeamMembers().add(tm.getIdNumber(), tm);
+            out.getTeamMembers().add(tm);
         }
         return out;
     }
@@ -156,6 +157,7 @@ public class TeamEditor {
                 teamToMod = teamifyThis();
                 TeamKt.getTeamsMap().put(teamToMod.getTeamID(), teamToMod);
                 Team.Companion.saveTeams();
+                JOptionPane.showMessageDialog(null, "Team data saved.");
             }
         });
         exitButton.addActionListener(new ActionListener() {

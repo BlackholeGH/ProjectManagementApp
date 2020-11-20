@@ -27,12 +27,16 @@ class Team (val teamName : String, val teamID : Int) {
         fun loadTeams()
         {
             //Some functional programming with lambdas for you here ;)
-            teamsMap = BufferedReader(FileReader(File("PMATeams.txt"))).use { br : BufferedReader -> br.readText() }.split("\n").drop(1).map { str : String -> Team.decodePersistence(str) as Team? }.associateBy { t : Team? -> t?.teamID ?: -1 } as MutableMap
+            if(File("PMATeams.txt").exists()) {
+                teamsMap = BufferedReader(FileReader(File("PMATeams.txt"))).use { br: BufferedReader -> br.readText() }
+                    .split("\n").drop(1).map { str: String -> Team.decodePersistence(str) as Team? }
+                    .associateBy { t: Team? -> t?.teamID ?: -1 } as MutableMap
+            }
         }
     }
     fun persistenceString() : String
     {
-        val memberSanitize = { s : String -> s.replace("|", "[PIPE]").replace(";", "[SEMICOLON]") }
+        val memberSanitize = { s : String -> s.replace("|", "[PIPE]").replace(";", "[SEMICOLON]").replace("\n", " ") }
         var outString = memberSanitize(teamName) + "|" + teamID.toString() + "|" + (teamMembers.map { t -> memberSanitize(t?.persistenceString() as String) }.joinToString(";"))
         return outString
     }

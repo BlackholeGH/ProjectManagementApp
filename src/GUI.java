@@ -19,6 +19,8 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
 
     public static void main(String[] args) {
         new GUI();
+        Team.Companion.loadTeams();
+        Task.Companion.loadTaskTemplates();
     }
 
     public GUI() {
@@ -233,11 +235,60 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
         }
 
         if ("editTeam".equals(e.getActionCommand())) {
-
+            Team[] teamR  = TeamKt.getTeamsMap().values().toArray(new Team[TeamKt.getTeamsMap().size()]);
+            String[] teamNames = new String[teamR.length];
+            for(int i = 0; i < teamR.length; i++)
+            {
+                teamNames[i] = teamR[i].getTeamName();
+            }
+            if(teamNames.length == 0)
+            {
+                JOptionPane.showMessageDialog(null, "There are no teams to edit.");
+            }
+            else {
+                String selection = (String) JOptionPane.showInputDialog(null, "Choose a team to edit.", "Selection dialog", JOptionPane.QUESTION_MESSAGE, null, teamNames, teamNames[0]);
+                int truei = -1;
+                for(int i = 0; i < teamR.length; i++)
+                {
+                    if(teamNames[i].equals(selection)) {
+                        truei = i;
+                        break;
+                    }
+                }
+                if(truei >= 0) {
+                    Team editTeam = teamR[truei];
+                    TeamEditor te = new TeamEditor();
+                    te.showTeamEditor(editTeam);
+                }
+            }
         }
-
         if ("removeTeam".equals(e.getActionCommand())) {
-
+            Team[] teamR  = TeamKt.getTeamsMap().values().toArray(new Team[TeamKt.getTeamsMap().size()]);
+            String[] teamNames = new String[teamR.length];
+            for(int i = 0; i < teamR.length; i++)
+            {
+                teamNames[i] = teamR[i].getTeamName();
+            }
+            if(teamNames.length == 0)
+            {
+                JOptionPane.showMessageDialog(null, "There are no teams to delete.");
+            }
+            else {
+                String selection = (String) JOptionPane.showInputDialog(null, "Choose a team to delete.", "Selection dialog", JOptionPane.QUESTION_MESSAGE, null, teamNames, teamNames[0]);
+                int truei = -1;
+                for(int i = 0; i < teamR.length; i++)
+                {
+                    if(teamNames[i].equals(selection)) {
+                        truei = i;
+                        break;
+                    }
+                }
+                if(truei >= 0) {
+                    Team editTeam = teamR[truei];
+                    TeamKt.getTeamsMap().remove(editTeam.getTeamID());
+                    Team.Companion.saveTeams();
+                }
+            }
         }
 
         if ("addTask".equals(e.getActionCommand())) {
@@ -262,6 +313,7 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
                         Task newSaveTask = tte.generateTask();
                         TaskKt.getTemplateTasks().put(newSaveTask.getTaskName(), newSaveTask);
                         tSelection = newSaveTask.getTaskName();
+                        Task.Companion.saveTaskTemplates();
                     }
                 });
                 tte.show();
@@ -278,6 +330,7 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
             else {
                 String selection = (String) JOptionPane.showInputDialog(null, "Choose a task template to delete.", "Selection dialog", JOptionPane.QUESTION_MESSAGE, null, taskTemplates, taskTemplates[0]);
                 TaskKt.getTemplateTasks().remove(selection);
+                Task.Companion.saveTaskTemplates();
             }
         }
     }

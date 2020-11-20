@@ -294,7 +294,11 @@ public class TaskTemplateEditor {
                 if(!localTaskEdit)
                 {
                     Task genTask = generateTask();
-                    if(!TaskKt.getTemplateTasks().containsKey(genTask.getTaskName())) { TaskKt.getTemplateTasks().put(genTask.getTaskName(), genTask); }
+                    if(!TaskKt.getTemplateTasks().containsKey(genTask.getTaskName()))
+                    {
+                        TaskKt.getTemplateTasks().put(genTask.getTaskName(), genTask);
+                        Task.Companion.saveTaskTemplates();
+                    }
                 }
                 JOptionPane.showMessageDialog(null, "Task information saved.");
             }

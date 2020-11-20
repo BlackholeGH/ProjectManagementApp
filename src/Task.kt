@@ -1,3 +1,4 @@
+import java.io.*
 import java.lang.Math
 
 var taskIDCount : Long = 0
@@ -30,18 +31,52 @@ class Task (val taskName : String, var taskDescription : String, val taskLength 
             outArray[4] = (timeLength / 640800).toInt()
             return outArray;
         }
+        fun decodePersistence(persistenceString : String) : Task {
+            val poutArray : Array<String> = persistenceString.split("|").toTypedArray()
+            val deSanitize = { s : String -> s.replace("[PIPE]", "|") }
+            val outTask : Task = Task(deSanitize(poutArray[1]), deSanitize(poutArray[2]), poutArray[3].toLong())
+            outTask.taskID = poutArray[0].toLong()
+            outTask.taskProgress = poutArray[4].toFloat()
+            try {
+                outTask.taskTeam = teamsMap[Integer.parseInt(poutArray[5])]
+            }
+            catch(e : Exception) { }
+            if(poutArray[6].length > 0) { outTask.ftIDsTempStore.addAll(poutArray[6].split(";").map{ s : String -> if(s.length > 0) { s.toLong() } else { 0 } }) }
+            return outTask
+        }
+        fun saveTaskTemplates()
+        {
+            val taskTemplatesString : String = "PMA Task Template Save Archive:\n" + templateTasks.values.map({t : Task? -> t!!.persistenceString() }).joinToString("\n")
+            val teamsFile : File = File("PMATaskTemplates.txt")
+            val bw : BufferedWriter = BufferedWriter(FileWriter(teamsFile))
+            bw.write(taskTemplatesString)
+            bw.close()
+        }
+        fun loadTaskTemplates()
+        {
+            if(File("PMATaskTemplates.txt").exists()) {
+                templateTasks.clear()
+                templateTasks.putAll(BufferedReader(FileReader(File("PMATaskTemplates.txt"))).use { br: BufferedReader -> br.readText() }
+                    .split("\n").drop(1).map { str: String -> Task.decodePersistence(str) as Task? }
+                    .associateBy { t: Task? -> t!!.taskName })
+            }
+        }
+    }
+    fun persistenceString() : String {
+        val sanitize = { s : String -> s.replace("|", "[PIPE]").replace("\n", " ") }
+        return taskID.toString() + "|" + sanitize(taskName) + "|" + sanitize(taskDescription) + "|" + taskLength + "|" + taskProgress + "|" + (taskTeam?.teamID ?: "") + "|" + followingTasks.map { t : Task? -> t?.taskID.toString() }.joinToString(";")
     }
     var taskProgress = 0f
         set(progVal : Float)
         {
-            taskProgress = Math.max(0f, Math.min(1f, progVal))
+            field = Math.max(0f, Math.min(1f, progVal))
         }
     fun timeRemaining() : Long {
         return (taskLength as Float * (1f - taskProgress)) as Long
     }
     var taskTeam : Team? = null
     var taskInstanceProject : Project? = null
-    val taskID = taskIDCount
+    var taskID = taskIDCount
     init {
         taskIDCount = taskIDCount + 1L
     }
@@ -50,4 +85,10 @@ class Task (val taskName : String, var taskDescription : String, val taskLength 
         return super.equals(other)
     }
     val followingTasks = MutableList<Task?>(0) { i -> null }
+    val ftIDsTempStore = MutableList<Long>(0) { i -> 0 }
+    fun pumpFollowers(taskMap : Map<Long, Task>)
+    {
+        followingTasks.clear()
+        followingTasks.addAll(ftIDsTempStore.map { l : Long -> taskMap[l] })
+    }
 }
