@@ -66,6 +66,9 @@ class Task (val taskName : String, var taskDescription : String, val taskLength 
         val sanitize = { s : String -> s.replace("|", "[PIPE]").replace("\n", " ") }
         return taskID.toString() + "|" + sanitize(taskName) + "|" + sanitize(taskDescription) + "|" + taskLength + "|" + taskProgress + "|" + (taskTeam?.teamID ?: "") + "|" + followingTasks.map { t : Task? -> t?.taskID.toString() }.joinToString(";")
     }
+    fun displaySummary() : String {
+        return taskName + "\n\n" + taskDescription + "\n\nProjected length: " + getLengthAsReadableTime(taskLength)
+    }
     var taskProgress = 0f
         set(progVal : Float)
         {

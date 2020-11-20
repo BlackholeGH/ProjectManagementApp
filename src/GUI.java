@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Hashtable;
 
 /**
  * @author Rishaban and Daniel
@@ -124,62 +125,14 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
         JPanel bottomPanel = new JPanel();
         bottomPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
         JButton addProject = new JButton("Add Project");
-        addProject.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                JFrame addProject = new JFrame();
-                JPanel panel = new JPanel();
-                JLabel addProjectTitle = new JLabel();
-                addProjectTitle = new JLabel("Add Project");
-                addProjectTitle.setFont(new Font("Arial", Font.BOLD, 15));
-                addProjectTitle.setHorizontalAlignment(JLabel.CENTER);
-                addProject.add(addProjectTitle, BorderLayout.NORTH);
-
-                addProject.setTitle("Add Project");
-                addProject.setSize(500, 380);
-                addProject.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-                addProject.setResizable(false);
-                addProject.setLocationRelativeTo(null);
-
-                JLabel projectName = new JLabel("Project Name:");
-                pName = new JTextField(40);
-                panel.add(projectName);
-                panel.add(pName);
-
-                JLabel projectProgress = new JLabel("Project Progress(%):");
-                pProgress = new JTextField(40);
-                panel.add(projectProgress);
-                panel.add(pProgress);
-
-                JLabel taskSequence = new JLabel("Task Sequence: ");
-                tSeq = new JTextField(40);
-                panel.add(taskSequence);
-                panel.add(tSeq);
-
-                JLabel taskSequenceProgress = new JLabel("Task Sequence Progress(%): ");
-                tSeqProg = new JTextField(40);
-                panel.add(taskSequenceProgress);
-                panel.add(tSeqProg);
-
-                JLabel taskDuration = new JLabel("Task Duration (mins):");
-                tDuration = new JTextField(40);
-                panel.add(taskDuration);
-                panel.add(tDuration);
-
-                JLabel teamSetup = new JLabel("Team Name:");
-                tSetup = new JTextField(40);
-                panel.add(teamSetup);
-                panel.add(tSetup);
-
-                panel.add(makeButton("Submit", "submitButton"));
-
-                addProject.add(panel);
-                addProject.setVisible(true);
-            }
-        });
+        addProject.setActionCommand("addProject");
+        //Sorry Rishi, I had to switch our your panel here for my own project GUI form to make the system work right
+        addProject.addActionListener(this);
         bottomPanel.add(addProject);
 
         JButton editProject = new JButton("Edit Project Details");
+        editProject.setActionCommand("editProject");
+        editProject.addActionListener(this);
         bottomPanel.add(editProject);
         projectNames.add(bottomPanel, BorderLayout.SOUTH);
 
@@ -221,8 +174,46 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
             tSetup.setText("");
         }
 
-        if ("Remove Project".equals(e.getActionCommand())) {
+        if ("addProject".equals(e.getActionCommand())) {
+            ProjectEditor pe = new ProjectEditor(null);
+            pe.show();
+        }
 
+        if ("editProject".equals(e.getActionCommand())) {
+            Hashtable<String, Project> projectIdentifiers = new Hashtable<>();
+            for(int i = 0; i < ProjectKt.getStoredProjects().size(); i++)
+            {
+                Project thisProject = ProjectKt.getStoredProjects().get(i);
+                projectIdentifiers.putIfAbsent(thisProject.getProjectName(), thisProject);
+            }
+            String[] selectors = projectIdentifiers.keySet().toArray(new String[0]);
+            if(selectors.length == 0)
+            {
+                JOptionPane.showMessageDialog(null, "There are no projects to edit.");
+            }
+            else {
+                String selection = (String) JOptionPane.showInputDialog(null, "Choose a project to edit.", "Selection dialog", JOptionPane.QUESTION_MESSAGE, null, selectors, selectors[0]);
+                ProjectEditor pe = new ProjectEditor(projectIdentifiers.get(selection));
+                pe.show();
+            }
+        }
+
+        if ("removeProject".equals(e.getActionCommand())) {
+            Hashtable<String, Project> projectIdentifiers = new Hashtable<>();
+            for(int i = 0; i < ProjectKt.getStoredProjects().size(); i++)
+            {
+                Project thisProject = ProjectKt.getStoredProjects().get(i);
+                projectIdentifiers.putIfAbsent(thisProject.getProjectName(), thisProject);
+            }
+            String[] selectors = projectIdentifiers.keySet().toArray(new String[0]);
+            if(selectors.length == 0)
+            {
+                JOptionPane.showMessageDialog(null, "There are no projects to delete.");
+            }
+            else {
+                String selection = (String) JOptionPane.showInputDialog(null, "Choose a project to delete.", "Selection dialog", JOptionPane.QUESTION_MESSAGE, null, selectors, selectors[0]);
+                ProjectKt.getStoredProjects().remove(selection);
+            }
         }
 
         if ("editDetails".equals(e.getActionCommand())) {
