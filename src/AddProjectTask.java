@@ -3,6 +3,8 @@ import javax.swing.event.ListDataListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 
 public class AddProjectTask {
@@ -14,8 +16,8 @@ public class AddProjectTask {
     private JTextPane taskDetailsPane;
     private JComboBox selectPrecedingTaskCBox;
     private JComboBox taskTeamComboBox;
-    private Hashtable<String, Task> projectTaskLookup = new Hashtable<>();
-    private Hashtable<String, Team> teamsLookup = new Hashtable<>();
+    private HashMap<String, Task> projectTaskLookup = new HashMap<>();
+    private HashMap<String, Team> teamsLookup = new HashMap<>();
     private Task workingAssociatedTask = new Task("Undefined task name", "Undefined task description", 0);
     private Task precedingTask = null;
     JDialog frame;
@@ -117,7 +119,7 @@ public class AddProjectTask {
                         workingAssociatedTask = temp2;
                     }
                 });
-                tte.show();
+                tte.show(frame);
                 tte.ingestTask(workingAssociatedTask);
             }
         });

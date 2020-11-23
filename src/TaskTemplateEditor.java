@@ -22,13 +22,24 @@ public class TaskTemplateEditor {
     protected int minuteValue = 0;
     protected int secondValue = 0;
     protected String taskName = "Untitled task";
-    private JFrame frame;
+    private JDialog frame;
     private Boolean localTaskEdit = false;
 
-    public void show() {
-        frame = new JFrame("TaskTemplateEditor");
+    public void show(JFrame parent) {
+        frame = new JDialog(parent, "Task template editor");
         frame.setContentPane(taskTemplatePanel);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setModal(true);
+        frame.pack();
+        frame.setLocationByPlatform(true);
+        frame.setVisible(true);
+    }
+
+    public void show(JDialog parent) {
+        frame = new JDialog(parent, "Task template editor");
+        frame.setContentPane(taskTemplatePanel);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setModal(true);
         frame.pack();
         frame.setLocationByPlatform(true);
         frame.setVisible(true);

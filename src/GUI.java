@@ -16,8 +16,27 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
     private JTextField tSeqProg;
     private JTextField tDuration;
     private JTextField tSetup;
-    private JFrame teamDetails;
+    private JScrollPane projectListPane;
+    private JList projectList;
     //hello
+
+    public void updateProjectList()
+    {
+        String selection = "";
+        if(projectList != null) {
+            selection = (String) projectList.getSelectedValue();
+        }
+        DefaultListModel<String> listValues = new DefaultListModel<>();
+        for(int i = 0; i < ProjectKt.getStoredProjects().size(); i++)
+        {
+            Project tp = ProjectKt.getStoredProjects().get(i);
+            listValues.addElement(tp.getProjectName());
+        }
+        projectList = new JList<>(listValues);
+        if(listValues.contains(selection) && !selection.isEmpty()) { projectList.setSelectedValue(selection, true); }
+        projectList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        projectListPane.setViewportView(projectList);
+    }
 
     public static void main(String[] args) {
         new GUI();
@@ -32,15 +51,19 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
     //GUI's main content
     public final void gui() {
         setTitle("Project Management System");
-        setSize(700, 500);
+        setMinimumSize(new Dimension(1200, 600));
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLayout(new BorderLayout());
-        setLocationRelativeTo(null);
+
+        JPanel commonPanel = new JPanel(new BorderLayout());
+
+        JPanel centerPanel = new JPanel();
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.PAGE_AXIS));
+
+        JPanel leftPanel = new JPanel();
+        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.PAGE_AXIS));
 
         JPanel rightPanel = new JPanel();
-        JPanel leftPanel = new JPanel();
-
-        JFrame teamDetails = new JFrame();
+        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.PAGE_AXIS));
 
         JMenuBar menuBar = new JMenuBar();
         JMenu taskOptions = new JMenu();
@@ -89,109 +112,54 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
         title = new JLabel("Project Management System Database:");
         title.setFont(new Font("Arial", Font.BOLD, 30));
         title.setHorizontalAlignment(JLabel.CENTER);
-        add(title, BorderLayout.NORTH);
+        commonPanel.add(title, BorderLayout.NORTH);
 
         //Text area that stores project and task info
         projectDetails = new JTextArea();
         projectDetails.setEditable(false);
-        rightPanel.add(projectDetails);
-        add(rightPanel,BorderLayout.EAST);
-
-        JLabel projectList = new JLabel("Select Project:");
-        projectList.setFont(new Font("Arial", Font.BOLD, 15));
-        leftPanel.add(projectList);
-
-        //Dummy list of values stored inside an arraylist to check if JList is working.
-
-        DefaultListModel<String> listValues = new DefaultListModel<>();
-
-        listValues.addElement("Project 1");
-        listValues.addElement("Project 2");
-        listValues.addElement("Project 3");
-        listValues.addElement("Project 4");
-        listValues.addElement("Project 5");
-        listValues.addElement("Project 6");
-        listValues.addElement("Project 7");
-        listValues.addElement("Project 8");
-        listValues.addElement("Project 9");
-        listValues.addElement("Project 10");
-
-        JList<String> projectsList = new JList<>(listValues);
-        projectsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-        leftPanel.add(new JScrollPane(projectsList));
-        add(leftPanel, BorderLayout.WEST);
-
-
-        //String projects[] = {"Project 1", "Project 2", "Project 3", "Project 4", "Project 5"};
-        //JList projectsList = new JList(projects);
-        //projectsList.setSelectedIndex(0);
-        //projectsList.addListSelectionListener();
-        //leftPanel.add(projectsList);
-        //add(leftPanel, BorderLayout.WEST);
-
-        //Scrollbar
         JScrollPane sp = new JScrollPane(projectDetails);
         sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        add(sp);
-        setVisible(true);
+        centerPanel.add(sp);
+        commonPanel.add(centerPanel, BorderLayout.CENTER);
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new FlowLayout(FlowLayout.CENTER));
+        JLabel projectList = new JLabel("Select Project:");
+        projectList.setFont(new Font("Arial", Font.BOLD, 18));
+        projectList.setAlignmentX(Component.CENTER_ALIGNMENT);
+        leftPanel.add(projectList);
+
+        projectListPane = new JScrollPane();
+        updateProjectList();
+        leftPanel.add(projectListPane);
+
+        JPanel projectEditButtonPanel = new JPanel(new FlowLayout());
 
         JButton addProject = new JButton("Add Project");
         addProject.setActionCommand("addProject");
         addProject.addActionListener(this);
-        panel.add(addProject);
+        addProject.setPreferredSize(new Dimension(120, 30));
+        projectEditButtonPanel.add(addProject);
 
         JButton editProject = new JButton("Edit Project Details");
-        editProject.setActionCommand("editProject");
+        editProject.setActionCommand("editDetails");
         editProject.addActionListener(this);
-        panel.add(editProject);
+        editProject.setPreferredSize(new Dimension(120, 30));
+        projectEditButtonPanel.add(editProject);
+        //projectEditButtonPanel.add(, BorderLayout.SOUTH);
 
-        JButton clearWindow = new JButton("Clear Window");
-        clearWindow.setActionCommand("CW");
-        clearWindow.addActionListener(this);
-        panel.add(clearWindow);
+        leftPanel.add(projectEditButtonPanel);
 
-        add(panel, BorderLayout.SOUTH);
+        leftPanel.setPreferredSize(new Dimension(300, 500));
 
-        //JFrame projectNames = new JFrame();
-        //projectNames.setTitle("Project Details");
-        //projectNames.setSize(500,500);
-        //projectNames.setLayout(new BorderLayout());
-        //projectNames.setLocation(122,270);
-
-        //JLabel projectTitle = new JLabel();
-        //projectTitle = new JLabel("Project Names:");
-        //projectTitle.setFont(new Font("Arial", Font.BOLD, 30));
-        //projectTitle.setHorizontalAlignment(JLabel.CENTER);
-        //projectNames.add(projectTitle, BorderLayout.NORTH);
-        
-        //projectNameDetails = new JTextArea();
-        //projectNameDetails.setEditable(false);
-        //projectNames.add(projectNameDetails);
-
-        //JScrollPane sp2 = new JScrollPane(projectNameDetails);
-        //sp2.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        //projectNames.add(sp2);
-
-
-        teamDetails.setTitle("Team Details");
-        teamDetails.setSize(550,500);
-        teamDetails.setLayout(new BorderLayout());
-        teamDetails.setLocation(1298,270);
+        commonPanel.add(leftPanel, BorderLayout.WEST);
 
         JLabel teamTitle = new JLabel();
         teamTitle = new JLabel("Team Details:");
-        teamTitle.setFont(new Font("Arial", Font.BOLD, 30));
-        teamTitle.setHorizontalAlignment(JLabel.CENTER);
-        teamDetails.add(teamTitle, BorderLayout.NORTH);
+        teamTitle.setFont(new Font("Arial", Font.BOLD, 18));
+        teamTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+        rightPanel.add(teamTitle);
 
         // Team Details displays a table of two columns, team names and number of team members
 
-        JPanel teamPanel = new JPanel();
-        teamDetails.add(teamPanel);
         JTable teamTable;
 
         String[] teamColumns = {"Team Names", "Number of Team Members"};
@@ -205,39 +173,17 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
 
         teamTable = new JTable(data, teamColumns);
         //Sets the size of the table
-        teamTable.setPreferredScrollableViewportSize(new Dimension(600, 360));
-        //Ensures the table is set to true and visible to GUI
-        teamTable.setFillsViewportHeight(true);
+        teamTable.setPreferredScrollableViewportSize(new Dimension(300, 360));
         JScrollPane jsp = new JScrollPane(teamTable);
         jsp.setBounds(teamTable.getBounds());
 
-        teamPanel.add(jsp);
+        rightPanel.add(jsp);
+        rightPanel.setPreferredSize(new Dimension(300, 500));
 
-        JPanel bottomPanel = new JPanel();
-        bottomPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-        JButton exitTeams = new JButton("Exit Team Details");
-        exitTeams.setActionCommand("exitTeams");
-        exitTeams.addActionListener(this);
-        bottomPanel.add(exitTeams);
-        teamDetails.add(bottomPanel, BorderLayout.SOUTH);
+        commonPanel.add(rightPanel, BorderLayout.EAST);
 
-        teamDetails.setVisible(true);
-
-        //JPanel bottomPanel2 = new JPanel();
-        //bottomPanel2.setLayout(new FlowLayout(FlowLayout.CENTER));
-        //JButton addProject = new JButton("Add Project");
-        //addProject.setActionCommand("addProject");
-        //Sorry Rishi, I had to switch our your panel here for my own project GUI form to make the system work right
-        //addProject.addActionListener(this);
-        //bottomPanel2.add(addProject);
-
-        //JButton editProject = new JButton("Edit Project Details");
-        //editProject.setActionCommand("editProject");
-        //editProject.addActionListener(this);
-        //bottomPanel2.add(editProject);
-        //projectNames.add(bottomPanel2, BorderLayout.SOUTH);
-
-        //projectNames.setVisible(true);
+        add(commonPanel);
+        setVisible(true);
     }
 
     @Override
@@ -280,7 +226,7 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
         }
 
         if ("addProject".equals(e.getActionCommand())) {
-            ProjectEditor pe = new ProjectEditor(null);
+            ProjectEditor pe = new ProjectEditor(null, this);
             pe.show();
         }
 
@@ -298,8 +244,27 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
             }
             else {
                 String selection = (String) JOptionPane.showInputDialog(null, "Choose a project to edit.", "Selection dialog", JOptionPane.QUESTION_MESSAGE, null, selectors, selectors[0]);
-                ProjectEditor pe = new ProjectEditor(projectIdentifiers.get(selection));
-                pe.show();
+                if(selection != null && !selection.isEmpty()) {
+                    ProjectEditor pe = new ProjectEditor(projectIdentifiers.get(selection), this);
+                    pe.show();
+                }
+            }
+        }
+
+        if("editDetails".equals(e.getActionCommand()))
+        {
+            if(projectList != null) {
+                Hashtable<String, Project> projectIdentifiers = new Hashtable<>();
+                for (int i = 0; i < ProjectKt.getStoredProjects().size(); i++) {
+                    Project thisProject = ProjectKt.getStoredProjects().get(i);
+                    projectIdentifiers.putIfAbsent(thisProject.getProjectName(), thisProject);
+                }
+                String selVal = (String) projectList.getSelectedValue();
+                if(selVal != null && projectIdentifiers.containsKey(selVal))
+                {
+                    ProjectEditor pe = new ProjectEditor(projectIdentifiers.get(selVal), this);
+                    pe.show();
+                }
             }
         }
 
@@ -318,11 +283,8 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
             else {
                 String selection = (String) JOptionPane.showInputDialog(null, "Choose a project to delete.", "Selection dialog", JOptionPane.QUESTION_MESSAGE, null, selectors, selectors[0]);
                 ProjectKt.getStoredProjects().remove(selection);
+                updateProjectList();
             }
-        }
-
-        if ("editDetails".equals(e.getActionCommand())) {
-
         }
 
         if ("addTeam".equals(e.getActionCommand())) {
@@ -389,7 +351,7 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
 
         if ("addTask".equals(e.getActionCommand())) {
             TaskTemplateEditor tte = new TaskTemplateEditor(false);
-            tte.show();
+            tte.show(this);
         }
         if ("editTask".equals(e.getActionCommand())) {
             String[] taskTemplates = TaskKt.getTemplateTasks().keySet().toArray(new String[TaskKt.getTemplateTasks().size()]);
@@ -412,7 +374,7 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
                         Task.Companion.saveTaskTemplates();
                     }
                 });
-                tte.show();
+                tte.show(this);
                 tte.ingestTask(TaskKt.getTemplateTasks().get(selection));
             }
         }

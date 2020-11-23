@@ -25,7 +25,7 @@ public class ProjectEditor {
     public void show() {
         frame = new JFrame("Project editor");
         frame.setContentPane(projectEditorPanel);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
     }
@@ -33,6 +33,7 @@ public class ProjectEditor {
     public ListModel<String> populateTaskSelector(Project popProject)
     {
         DefaultListModel<String> outModel = new DefaultListModel<String>();
+        if(listEntryIdentifier == null) { listEntryIdentifier = new Hashtable<>(); }
         listEntryIdentifier.clear();
         DecimalFormat df = new DecimalFormat("###.##");
         for(int i = 0; i < popProject.getProjectTasks().size(); i++)
@@ -45,7 +46,7 @@ public class ProjectEditor {
         return outModel;
     }
 
-    public ProjectEditor(Project preExistingProject) {
+    public ProjectEditor(Project preExistingProject, GUI myGUI) {
         if(preExistingProject != null)
         {
             lastSavedProject = preExistingProject;
@@ -68,9 +69,15 @@ public class ProjectEditor {
         editTaskButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                AddProjectTask apt = new AddProjectTask();
-                apt.show(frame, associatedProject, listEntryIdentifier.get(taskSelectList.getSelectedValue()));
-                populateTaskSelector(associatedProject);
+                String etIndex = (String)taskSelectList.getSelectedValue();
+                if(etIndex != null && !etIndex.isEmpty()) {
+                    Task editTask = listEntryIdentifier.get(etIndex);
+                    if(editTask != null) {
+                        AddProjectTask apt = new AddProjectTask();
+                        apt.show(frame, associatedProject, editTask);
+                        populateTaskSelector(associatedProject);
+                    }
+                }
             }
         });
         deleteTaskButton.addActionListener(new ActionListener() {
@@ -89,6 +96,7 @@ public class ProjectEditor {
                 ProjectKt.getStoredProjects().add(associatedProject);
                 lastSavedProject = associatedProject;
                 associatedProject = associatedProject.clone();
+                myGUI.updateProjectList();
             }
         });
         exitProjectDesignerButton.addActionListener(new ActionListener() {

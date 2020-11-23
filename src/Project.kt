@@ -66,6 +66,6 @@ class Project (var projectName : String) {
                 tasksList.add(task)
             }
         }
-        return tasksList as Array<Task>
+        return tasksList.toTypedArray() as Array<Task>
     }
 }
