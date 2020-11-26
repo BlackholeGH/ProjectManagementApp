@@ -21,12 +21,26 @@ public class ProjectEditor {
     private Project lastSavedProject;
     private Project associatedProject;
     private JFrame frame;
+    private Long lastTimeR = -1L;
+
+    public void updateRemainingLength()
+    {
+        Long timeR = associatedProject.getRemainingTime();
+        String readableTime = Task.Companion.getLengthAsReadableTime(timeR);
+        projectLengthString.setText("Project time remaining: " + readableTime);
+        if(timeR > lastTimeR)
+        {
+            JOptionPane.showMessageDialog(null, "A change was made to this project that increased its projected time remaining per the critical path. The new projected time for completion is: " + readableTime);
+        }
+        lastTimeR = timeR;
+    }
 
     public void show() {
         frame = new JFrame("Project editor");
         frame.setContentPane(projectEditorPanel);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.pack();
+        updateRemainingLength();
         frame.setVisible(true);
     }
 
@@ -47,6 +61,7 @@ public class ProjectEditor {
     }
 
     public ProjectEditor(Project preExistingProject, GUI myGUI) {
+        ProjectEditor prEd = this;
         if(preExistingProject != null)
         {
             lastSavedProject = preExistingProject;
@@ -61,9 +76,9 @@ public class ProjectEditor {
         addTaskButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                AddProjectTask apt = new AddProjectTask();
+                AddProjectTask apt = new AddProjectTask(prEd);
                 apt.show(frame, associatedProject, null);
-                populateTaskSelector(associatedProject);
+                taskSelectList.setModel(populateTaskSelector(associatedProject));
             }
         });
         editTaskButton.addActionListener(new ActionListener() {
@@ -73,9 +88,9 @@ public class ProjectEditor {
                 if(etIndex != null && !etIndex.isEmpty()) {
                     Task editTask = listEntryIdentifier.get(etIndex);
                     if(editTask != null) {
-                        AddProjectTask apt = new AddProjectTask();
+                        AddProjectTask apt = new AddProjectTask(prEd);
                         apt.show(frame, associatedProject, editTask);
-                        populateTaskSelector(associatedProject);
+                        taskSelectList.setModel(populateTaskSelector(associatedProject));
                     }
                 }
             }
@@ -83,8 +98,9 @@ public class ProjectEditor {
         deleteTaskButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                associatedProject.removeTask(listEntryIdentifier.get(taskSelectList.getSelectedValue()));
-                populateTaskSelector(associatedProject);
+                associatedProject.removeTask(listEntryIdentifier.get(taskSelectList.getSelectedValue()), true);
+                taskSelectList.setModel(populateTaskSelector(associatedProject));
+                updateRemainingLength();
             }
         });
         saveProjectButton.addActionListener(new ActionListener() {
@@ -96,7 +112,11 @@ public class ProjectEditor {
                 ProjectKt.getStoredProjects().add(associatedProject);
                 lastSavedProject = associatedProject;
                 associatedProject = associatedProject.clone();
+                Project.Companion.saveProjects();
                 myGUI.updateProjectList();
+                myGUI.updateDisplay();
+                taskSelectList.setModel(populateTaskSelector(associatedProject));
+                JOptionPane.showMessageDialog(null,"Project information saved.");
             }
         });
         exitProjectDesignerButton.addActionListener(new ActionListener() {

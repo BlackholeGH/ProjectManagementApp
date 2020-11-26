@@ -1,4 +1,7 @@
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.text.DefaultCaret;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Hashtable;
@@ -18,7 +21,15 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
     private JTextField tSetup;
     private JScrollPane projectListPane;
     private JList projectList;
-    //hello
+    private JTable teamTable;
+    private JScrollPane jspTeamsTable;
+    private JScrollPane jspMainProjectDisplay;
+    public static Boolean useKotlinCriticalPath = true;
+
+    public static Long accessScala(Project project)
+    {
+        return new ScalaCriticalPathTracer().returnTimeRemainingByCriticalPath(project);
+    }
 
     public void updateProjectList()
     {
@@ -36,12 +47,58 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
         if(listValues.contains(selection) && !selection.isEmpty()) { projectList.setSelectedValue(selection, true); }
         projectList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         projectListPane.setViewportView(projectList);
+        projectList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                updateDisplay();
+            }
+        });
+    }
+
+    public void updateDisplay()
+    {
+        String pName = (String)projectList.getSelectedValue();
+        for(int i = 0; i < ProjectKt.getStoredProjects().size(); i++)
+        {
+            Project tp = ProjectKt.getStoredProjects().get(i);
+            if(tp.getProjectName().equals(pName)) {
+                projectDetails.setText(tp.fullDisplayDetails());
+                DefaultCaret caret = (DefaultCaret)projectDetails.getCaret();
+                caret.setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
+                break;
+            }
+        }
+    }
+
+    public void updateTeamTableData()
+    {
+        if(jspTeamsTable == null) { return; }
+        // Team Details displays a table of two columns, team names and number of team members
+
+
+        String[] teamColumns = {"Team Name", "Member Count"};
+
+        //Defined a multidimensional array to store values at a specific
+        //destination
+        String[][] data = new String[TeamKt.getTeamsMap().size()][2];
+        for(int i = 0; i < TeamKt.getTeamsMap().size(); i++)
+        {
+            Team t = TeamKt.getTeamsMap().values().toArray(new Team[0])[i];
+            data[i] = new String[] { t.getTeamName(), t.getTeamMembers().size() + "" };
+        }
+
+        teamTable = new JTable(data, teamColumns);
+        jspTeamsTable.setViewportView(teamTable);
+        //Sets the size of the table
     }
 
     public static void main(String[] args) {
-        new GUI();
+        GUI mG = new GUI();
         Team.Companion.loadTeams();
         Task.Companion.loadTaskTemplates();
+        Project.Companion.loadProjects();
+        mG.updateTeamTableData();
+        mG.updateProjectList();
     }
 
     public GUI() {
@@ -76,7 +133,7 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
         //Menu bar options
         setJMenuBar(menuBar);
 
-        projectOptions = new JMenu("Project Options");
+        projectOptions = new JMenu("Projects");
         projectOptions.add(makeMenuItem("Add Project", "addProject"));
         projectOptions.addSeparator();
         projectOptions.add(makeMenuItem("Remove Project", "removeProject"));
@@ -84,7 +141,7 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
         projectOptions.add(makeMenuItem("Edit Project Details", "editProject"));
         menuBar.add(projectOptions);
 
-        teamOptions = new JMenu("Team Options");
+        teamOptions = new JMenu("Teams");
         teamOptions.add(makeMenuItem("Add Team", "addTeam"));
         teamOptions.addSeparator();
         teamOptions.add(makeMenuItem("Edit Team", "editTeam"));
@@ -92,7 +149,7 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
         teamOptions.add(makeMenuItem("Remove Team", "removeTeam"));
         menuBar.add(teamOptions);
 
-        taskOptions = new JMenu("Task Options");
+        taskOptions = new JMenu("Task templates");
         taskOptions.add(makeMenuItem("Create task template", "addTask"));
         taskOptions.addSeparator();
         taskOptions.add(makeMenuItem("Delete task template", "removeTask"));
@@ -103,7 +160,7 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
         options = new JMenu("Options");
         options.add(makeMenuItem("Help", "Help"));
         options.addSeparator();
-        options.add(makeMenuItem("Clear Window", "CW"));
+        options.add(makeMenuItem("Choose critical path modality", "chooseCrit"));
         options.addSeparator();
         options.add(makeMenuItem("Exit", "Exit"));
 
@@ -117,9 +174,9 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
         //Text area that stores project and task info
         projectDetails = new JTextArea();
         projectDetails.setEditable(false);
-        JScrollPane sp = new JScrollPane(projectDetails);
-        sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        centerPanel.add(sp);
+        jspMainProjectDisplay = new JScrollPane(projectDetails);
+        jspMainProjectDisplay.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        centerPanel.add(jspMainProjectDisplay);
         commonPanel.add(centerPanel, BorderLayout.CENTER);
 
         JLabel projectList = new JLabel("Select Project:");
@@ -158,26 +215,11 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
         teamTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
         rightPanel.add(teamTitle);
 
-        // Team Details displays a table of two columns, team names and number of team members
+        teamTable = new JTable();
+        jspTeamsTable = new JScrollPane();
+        updateTeamTableData();
 
-        JTable teamTable;
-
-        String[] teamColumns = {"Team Names", "Number of Team Members"};
-
-        //Defined a multidimensional array to store values at a specific
-        //destination
-        Object[][] data = {
-                {"",""}
-
-        };
-
-        teamTable = new JTable(data, teamColumns);
-        //Sets the size of the table
-        teamTable.setPreferredScrollableViewportSize(new Dimension(300, 360));
-        JScrollPane jsp = new JScrollPane(teamTable);
-        jsp.setBounds(teamTable.getBounds());
-
-        rightPanel.add(jsp);
+        rightPanel.add(jspTeamsTable);
         rightPanel.setPreferredSize(new Dimension(300, 500));
 
         commonPanel.add(rightPanel, BorderLayout.EAST);
@@ -189,40 +231,11 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if ("Help".equals(e.getActionCommand())) {
-            JOptionPane.showMessageDialog(null, "");
-        }
-
-        if ("CW".equals(e.getActionCommand())) {
-            projectDetails.setText("");
+            JOptionPane.showMessageDialog(null, "Nobody is around to help. There is no saving you now.");
         }
 
         if ("Exit".equals(e.getActionCommand())) {
             System.exit(0);
-        }
-
-        if ("exitTeams".equals(e.getActionCommand())) {
-
-        }
-
-        if ("submitButton".equals(e.getActionCommand())) {
-            projectNameDetails.append("Project Name: " + pName.getText() + "\n");
-            projectNameDetails.append("Project Progress(%): " + pProgress.getText() + "%" + "\n");
-            projectNameDetails.append("\n");
-
-            //projectDetails.append("Project Name: " + pName.getText() + "\n");
-            //projectDetails.append("Project Progress(%): " + pProgress.getText() + "%" + "\n");
-            projectDetails.append("Task Sequence: " + tSeq.getText() + "\n");
-            projectDetails.append("Task Sequence Progress(%): " + tSeqProg.getText() + "%" + "\n");
-            projectDetails.append("Task Duration (mins): " + tDuration.getText() + " mins" + "\n");
-            projectDetails.append("Team Name: " + tSetup.getText() + "\n");
-            projectDetails.append("\n");
-
-            pName.setText("");
-            pProgress.setText("");
-            tSeq.setText("");
-            tSeqProg.setText("");
-            tDuration.setText("");
-            tSetup.setText("");
         }
 
         if ("addProject".equals(e.getActionCommand())) {
@@ -283,12 +296,13 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
             else {
                 String selection = (String) JOptionPane.showInputDialog(null, "Choose a project to delete.", "Selection dialog", JOptionPane.QUESTION_MESSAGE, null, selectors, selectors[0]);
                 ProjectKt.getStoredProjects().remove(selection);
+                Project.Companion.saveProjects();
                 updateProjectList();
             }
         }
 
         if ("addTeam".equals(e.getActionCommand())) {
-            TeamEditor te = new TeamEditor();
+            TeamEditor te = new TeamEditor(this);
             te.showTeamEditor(null);
         }
 
@@ -315,7 +329,7 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
                 }
                 if(truei >= 0) {
                     Team editTeam = teamR[truei];
-                    TeamEditor te = new TeamEditor();
+                    TeamEditor te = new TeamEditor(this);
                     te.showTeamEditor(editTeam);
                 }
             }
@@ -345,13 +359,18 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
                     Team editTeam = teamR[truei];
                     TeamKt.getTeamsMap().remove(editTeam.getTeamID());
                     Team.Companion.saveTeams();
+                    updateTeamTableData();
                 }
             }
         }
-
+        if ("chooseCrit".equals(e.getActionCommand())) {
+            String[] chooseSwitch = new String[] { "Kotlin", "Scala" };
+            String selection = (String) JOptionPane.showInputDialog(null, "Choose which implementation of the critical path to use.", "Selection dialog", JOptionPane.QUESTION_MESSAGE, null, chooseSwitch, chooseSwitch[useKotlinCriticalPath ? 0 : 1]);
+            useKotlinCriticalPath = selection.equals("Kotlin");
+        }
         if ("addTask".equals(e.getActionCommand())) {
             TaskTemplateEditor tte = new TaskTemplateEditor(false);
-            tte.show(this);
+            tte.show(this, true);
         }
         if ("editTask".equals(e.getActionCommand())) {
             String[] taskTemplates = TaskKt.getTemplateTasks().keySet().toArray(new String[TaskKt.getTemplateTasks().size()]);
@@ -374,8 +393,7 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
                         Task.Companion.saveTaskTemplates();
                     }
                 });
-                tte.show(this);
-                tte.ingestTask(TaskKt.getTemplateTasks().get(selection));
+                tte.showAndIngestTask(this, TaskKt.getTemplateTasks().get(selection));
             }
         }
         if("removeTask".equals(e.getActionCommand()))

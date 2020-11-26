@@ -70,7 +70,7 @@ public class TeamEditor {
         return out;
     }
 
-    public TeamEditor() {
+    public TeamEditor(GUI myGUI) {
 
         nameField.addActionListener(new ActionListener() {
             @Override
@@ -158,6 +158,7 @@ public class TeamEditor {
                 TeamKt.getTeamsMap().put(teamToMod.getTeamID(), teamToMod);
                 Team.Companion.saveTeams();
                 JOptionPane.showMessageDialog(null, "Team data saved.");
+                myGUI.updateTeamTableData();
             }
         });
         exitButton.addActionListener(new ActionListener() {
