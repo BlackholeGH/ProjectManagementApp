@@ -36,6 +36,7 @@ class Task (val taskName : String, var taskDescription : String, val taskLength 
             val deSanitize = { s : String -> s.replace("[PIPE]", "|") }
             val outTask : Task = Task(deSanitize(poutArray[1]), deSanitize(poutArray[2]), poutArray[3].toLong())
             outTask.taskID = poutArray[0].toLong()
+            if(outTask.taskID >= taskIDCount) { taskIDCount = outTask.taskID + 1 }
             outTask.taskProgress = poutArray[4].toFloat()
             try {
                 outTask.taskTeam = teamsMap[Integer.parseInt(poutArray[5])]
@@ -69,13 +70,22 @@ class Task (val taskName : String, var taskDescription : String, val taskLength 
     fun displaySummary() : String {
         return taskName + "\n\n" + taskDescription + "\n\nProjected length: " + getLengthAsReadableTime(taskLength)
     }
+    fun displayFullDetails(leftPadding : String) : String {
+        var details = leftPadding + "Task name: " + taskName + "\n"
+        details = details + leftPadding + "Task ID: " + taskID + "\n"
+        details = details + leftPadding + "Estimated total time: " + getLengthAsReadableTime(taskLength) + "\n"
+        details = details + leftPadding + "Estimated time remaining: " + getLengthAsReadableTime(timeRemaining()) + "\n"
+        details = details + leftPadding + "Task description: " + taskDescription + "\n"
+        details = details + leftPadding + "Assigned team: " + (taskTeam?.teamName ?: "No assigned team") + "\n"
+        return details
+    }
     var taskProgress = 0f
         set(progVal : Float)
         {
             field = Math.max(0f, Math.min(1f, progVal))
         }
     fun timeRemaining() : Long {
-        return (taskLength as Float * (1f - taskProgress)) as Long
+        return (taskLength.toFloat() * (1f - taskProgress)).toLong()
     }
     var taskTeam : Team? = null
     var taskInstanceProject : Project? = null

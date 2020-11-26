@@ -2,6 +2,8 @@ import javax.swing.*;
 import javax.swing.event.ListDataListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,6 +18,7 @@ public class AddProjectTask {
     private JTextPane taskDetailsPane;
     private JComboBox selectPrecedingTaskCBox;
     private JComboBox taskTeamComboBox;
+    private JTextField taskProgressField;
     private HashMap<String, Task> projectTaskLookup = new HashMap<>();
     private HashMap<String, Team> teamsLookup = new HashMap<>();
     private Task workingAssociatedTask = new Task("Undefined task name", "Undefined task description", 0);
@@ -24,9 +27,10 @@ public class AddProjectTask {
     Project taskProject;
     Task lastSavedTask = null;
 
-    private void updateTextPane()
+    public void updateTextPane()
     {
         taskDetailsPane.setText(workingAssociatedTask.displaySummary());
+        taskProgressField.setText(String.format("%.2f", workingAssociatedTask.getTaskProgress()));
     }
 
     public void show(JFrame parentFrame, Project project, Task editableTask) {
@@ -43,6 +47,7 @@ public class AddProjectTask {
         String[] precTaskSelectStrings = projectTaskLookup.keySet().toArray(new String[0]);
         ComboBoxModel<String> cbm = new DefaultComboBoxModel<String>(precTaskSelectStrings);
         selectPrecedingTaskCBox.setModel(cbm);
+        selectPrecedingTaskCBox.setSelectedItem("No preceding task");
         for(int i = 0; i < TeamKt.getTeamsMap().size(); i++)
         {
             Team t = (Team)TeamKt.getTeamsMap().values().toArray()[i];
@@ -50,6 +55,7 @@ public class AddProjectTask {
         }
         String[] teamSelectStrings = teamsLookup.keySet().toArray(new String[0]);
         ComboBoxModel<String> cbm2 = new DefaultComboBoxModel<String>(teamSelectStrings);
+        taskTeamComboBox.setModel(cbm2);
         if(editableTask != null)
         {
             lastSavedTask = editableTask;
@@ -64,17 +70,17 @@ public class AddProjectTask {
             int teamCBIndex = -1;
             for(int i = 0; i < taskTeamComboBox.getItemCount(); i++)
             {
-                if(taskTeamComboBox.getItemAt(i).equals(taskTeamLast.getTeamName() + " (" + taskTeamLast.getTeamID() + ")"))
+                if(taskTeamLast != null && taskTeamComboBox.getItemAt(i).equals(taskTeamLast.getTeamName() + " (" + taskTeamLast.getTeamID() + ")"))
                 {
                     teamCBIndex = i;
                     break;
                 }
             }
             taskTeamComboBox.setSelectedItem(teamCBIndex);
-            for(int i = 0; i < projectTaskLookup.values().size(); i++)
+            for(int i = 0; i < projectTaskLookup.keySet().size(); i++)
             {
                 String key = projectTaskLookup.keySet().toArray(new String[0])[i];
-                if(projectTaskLookup.get(key).getFollowingTasks().contains(lastSavedTask))
+                if(projectTaskLookup.get(key) != null && projectTaskLookup.get(key).getFollowingTasks().contains(lastSavedTask))
                 {
                     selectPrecedingTaskCBox.setSelectedItem(key);
                 }
@@ -84,7 +90,8 @@ public class AddProjectTask {
         frame.setVisible(true);
     }
 
-    public AddProjectTask() {
+    public AddProjectTask(ProjectEditor projEd) {
+        AddProjectTask apt = this;
         selectPrecedingTaskCBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -102,7 +109,13 @@ public class AddProjectTask {
                 else {
                     String selection = (String) JOptionPane.showInputDialog(null, "Choose a task template clone.", "Selection dialog", JOptionPane.QUESTION_MESSAGE, null, taskTemplates, taskTemplates[0]);
                     Task temp = TaskKt.getTemplateTasks().get(selection);
-                    workingAssociatedTask = new Task(temp.getTaskName(), temp.getTaskDescription(), temp.getTaskLength());
+                    Task realTemp = new Task(temp.getTaskName(), temp.getTaskDescription(), temp.getTaskLength());
+                    realTemp.setTaskProgress(workingAssociatedTask.getTaskProgress());
+                    for(int i = 0; i < workingAssociatedTask.getFollowingTasks().size(); i++)
+                    {
+                        realTemp.getFollowingTasks().add(workingAssociatedTask.getFollowingTasks().get(i));
+                    }
+                    workingAssociatedTask = realTemp;
                     updateTextPane();
                 }
             }
@@ -116,11 +129,16 @@ public class AddProjectTask {
                     public void actionPerformed(ActionEvent e) {
                         Task temp2 = tte.generateTask();
                         temp2.setTaskTeam(workingAssociatedTask.getTaskTeam());
+                        temp2.setTaskProgress(workingAssociatedTask.getTaskProgress());
+                        for(int i = 0; i < workingAssociatedTask.getFollowingTasks().size(); i++)
+                        {
+                            temp2.getFollowingTasks().add(workingAssociatedTask.getFollowingTasks().get(i));
+                        }
                         workingAssociatedTask = temp2;
+                        apt.updateTextPane();
                     }
                 });
-                tte.show(frame);
-                tte.ingestTask(workingAssociatedTask);
+                tte.showAndIngestTask(frame, workingAssociatedTask);
             }
         });
         cancelButton.addActionListener(new ActionListener() {
@@ -142,9 +160,14 @@ public class AddProjectTask {
                             break;
                         }
                     }
-                    taskProject.removeTask(lastSavedTask);
+                    taskProject.removeTask(lastSavedTask, false);
+                    if(formerPrecedingTask != null) { formerPrecedingTask.getFollowingTasks().remove(lastSavedTask); }
                 }
                 lastSavedTask = new Task(workingAssociatedTask.getTaskName(), workingAssociatedTask.getTaskDescription(), workingAssociatedTask.getTaskLength());
+                if(workingAssociatedTask.getTaskTeam() == null)
+                {
+                    workingAssociatedTask.setTaskTeam(teamsLookup.get(taskTeamComboBox.getSelectedItem()));
+                }
                 lastSavedTask.setTaskTeam(workingAssociatedTask.getTaskTeam());
                 lastSavedTask.setTaskProgress(workingAssociatedTask.getTaskProgress());
                 for(int i = 0; i < workingAssociatedTask.getFollowingTasks().size(); i++)
@@ -152,22 +175,28 @@ public class AddProjectTask {
                     lastSavedTask.getFollowingTasks().add(workingAssociatedTask.getFollowingTasks().get(i));
                 }
                 taskProject.addTask(lastSavedTask, lastSavedTask.getTaskTeam(), precedingTask);
-                if(formerPrecedingTask != null)
-                {
-                    for(int i = 0; i < lastSavedTask.getFollowingTasks().size(); i++)
-                    {
-                        if(formerPrecedingTask.getFollowingTasks().contains(lastSavedTask.getFollowingTasks().get(i)))
-                        {
-                            formerPrecedingTask.getFollowingTasks().remove(lastSavedTask.getFollowingTasks().get(i));
-                        }
-                    }
-                }
+                projEd.populateTaskSelector(taskProject);
+                projEd.updateRemainingLength();
+                frame.dispose();
             }
         });
         taskTeamComboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 workingAssociatedTask.setTaskTeam(teamsLookup.get(taskTeamComboBox.getSelectedItem()));
+            }
+        });
+        taskProgressField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                float prog = Float.parseFloat(taskProgressField.getText()) / 100f;
+                workingAssociatedTask.setTaskProgress(prog);
+            }
+        });
+        taskProgressField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                taskProgressField.postActionEvent();
             }
         });
     }

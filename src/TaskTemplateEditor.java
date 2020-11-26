@@ -25,14 +25,14 @@ public class TaskTemplateEditor {
     private JDialog frame;
     private Boolean localTaskEdit = false;
 
-    public void show(JFrame parent) {
+    public void show(JFrame parent, Boolean trueShow) {
         frame = new JDialog(parent, "Task template editor");
         frame.setContentPane(taskTemplatePanel);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setModal(true);
         frame.pack();
         frame.setLocationByPlatform(true);
-        frame.setVisible(true);
+        if(trueShow) { frame.setVisible(true); }
     }
 
     public void show(JDialog parent) {
@@ -42,6 +42,18 @@ public class TaskTemplateEditor {
         frame.setModal(true);
         frame.pack();
         frame.setLocationByPlatform(true);
+    }
+
+    public void showAndIngestTask(JDialog parent, Task inTask) {
+        show(parent);
+        ingestTask(inTask);
+        frame.setVisible(true);
+    }
+
+    public void showAndIngestTask(JFrame parent, Task inTask)
+    {
+        show(parent, false);
+        ingestTask(inTask);
         frame.setVisible(true);
     }
 
@@ -132,7 +144,7 @@ public class TaskTemplateEditor {
                     int remainder = localDayVal % 7;
                     int nonRemainder = localDayVal - remainder;
                     dayValue = remainder;
-                    if(remainder > 0)
+                    if(nonRemainder > 0)
                     {
                         ((JTextField)e.getSource()).setText(dayValue + "");
                         weekField.setText(weekValue + (nonRemainder / 7) + "");
@@ -174,7 +186,7 @@ public class TaskTemplateEditor {
                     int remainder = localHourVal % 24;
                     int nonRemainder = localHourVal - remainder;
                     hourValue = remainder;
-                    if(remainder > 0)
+                    if(nonRemainder > 0)
                     {
                         ((JTextField)e.getSource()).setText(hourValue + "");
                         dayField.setText(dayValue + (nonRemainder / 24) + "");
@@ -216,7 +228,7 @@ public class TaskTemplateEditor {
                     int remainder = localMinuteVal % 60;
                     int nonRemainder = localMinuteVal - remainder;
                     minuteValue = remainder;
-                    if(remainder > 0)
+                    if(nonRemainder > 0)
                     {
                         ((JTextField)e.getSource()).setText(minuteValue + "");
                         hourField.setText(hourValue + (nonRemainder / 60) + "");
@@ -258,7 +270,7 @@ public class TaskTemplateEditor {
                     int remainder = localSecondVal % 60;
                     int nonRemainder = localSecondVal - remainder;
                     secondValue = remainder;
-                    if(remainder > 0)
+                    if(nonRemainder > 0)
                     {
                         ((JTextField)e.getSource()).setText(secondValue + "");
                         minuteField.setText(minuteValue + (nonRemainder / 60) + "");
