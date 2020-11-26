@@ -89,7 +89,6 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
 
         teamTable = new JTable(data, teamColumns);
         jspTeamsTable.setViewportView(teamTable);
-        //Sets the size of the table
     }
 
     public static void main(String[] args) {

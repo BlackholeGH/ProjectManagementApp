@@ -28,7 +28,7 @@ public class ProjectEditor {
         Long timeR = associatedProject.getRemainingTime();
         String readableTime = Task.Companion.getLengthAsReadableTime(timeR);
         projectLengthString.setText("Project time remaining: " + readableTime);
-        if(timeR > lastTimeR)
+        if(timeR > lastTimeR && lastTimeR >= 0)
         {
             JOptionPane.showMessageDialog(null, "A change was made to this project that increased its projected time remaining per the critical path. The new projected time for completion is: " + readableTime);
         }
