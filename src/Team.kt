@@ -12,7 +12,7 @@ class Team (val teamName : String, val teamID : Int) {
             val deSanitize = { s : String -> s.replace("[PIPE]", "|").replace("[SEMICOLON]", ";") }
             val decodedTeam : Team = Team(params[0], params[1].toInt())
             for(member in params[2].split(';').map { s: String -> TeamMember.decodePersistence(deSanitize(s)) }) {
-                decodedTeam.teamMembers.add(member)
+                if(member != null) { decodedTeam.teamMembers.add(member) }
             }
             return decodedTeam
         }
