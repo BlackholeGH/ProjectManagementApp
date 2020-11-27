@@ -31,6 +31,10 @@ class Task (val taskName : String, var taskDescription : String, val taskLength 
             outArray[4] = (timeLength / 640800).toInt()
             return outArray;
         }
+
+        // Saves task information and decodes persistence string which returns their respective task items
+        // Also fills in the preceding task
+
         fun decodePersistence(persistenceString : String) : Task {
             val poutArray : Array<String> = persistenceString.split("|").toTypedArray()
             val deSanitize = { s : String -> s.replace("[PIPE]", "|") }
@@ -70,6 +74,8 @@ class Task (val taskName : String, var taskDescription : String, val taskLength 
     fun displaySummary() : String {
         return taskName + "\n\n" + taskDescription + "\n\nProjected length: " + getLengthAsReadableTime(taskLength)
     }
+
+    // Full details displayed on main viewport screen
     fun displayFullDetails(leftPadding : String) : String {
         var details = leftPadding + "Task name: " + taskName + "\n"
         details = details + leftPadding + "Task ID: " + taskID + "\n"

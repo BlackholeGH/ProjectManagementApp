@@ -31,6 +31,7 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
         return new ScalaCriticalPathTracer().returnTimeRemainingByCriticalPath(project);
     }
 
+    // Displays projects list
     public void updateProjectList()
     {
         String selection = "";
@@ -45,6 +46,7 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
         }
         projectList = new JList<>(listValues);
         if(listValues.contains(selection) && !selection.isEmpty()) { projectList.setSelectedValue(selection, true); }
+        // Selects one project at a time
         projectList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         projectListPane.setViewportView(projectList);
         projectList.addListSelectionListener(new ListSelectionListener() {
@@ -263,6 +265,7 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
             }
         }
 
+        // Edit project details
         if("editDetails".equals(e.getActionCommand()))
         {
             if(projectList != null) {
@@ -362,6 +365,8 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
                 }
             }
         }
+
+        // Choosing a Critical Path
         if ("chooseCrit".equals(e.getActionCommand())) {
             String[] chooseSwitch = new String[] { "Kotlin", "Scala" };
             String selection = (String) JOptionPane.showInputDialog(null, "Choose which implementation of the critical path to use.", "Selection dialog", JOptionPane.QUESTION_MESSAGE, null, chooseSwitch, chooseSwitch[useKotlinCriticalPath ? 0 : 1]);

@@ -16,6 +16,8 @@ class Team (val teamName : String, val teamID : Int) {
             }
             return decodedTeam
         }
+
+        // Saving teams to PMATeams txt file
         fun saveTeams()
         {
             val teamsSaveString : String = "PMA Teams Save Archive:\n" + teamsMap.values.map({t : Team? -> t!!.persistenceString() }).joinToString("\n")
