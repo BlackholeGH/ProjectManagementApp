@@ -370,7 +370,7 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
         if ("chooseCrit".equals(e.getActionCommand())) {
             String[] chooseSwitch = new String[] { "Kotlin", "Scala" };
             String selection = (String) JOptionPane.showInputDialog(null, "Choose which implementation of the critical path to use.", "Selection dialog", JOptionPane.QUESTION_MESSAGE, null, chooseSwitch, chooseSwitch[useKotlinCriticalPath ? 0 : 1]);
-            useKotlinCriticalPath = selection.equals("Kotlin");
+            if(selection != null) { useKotlinCriticalPath = selection.equals("Kotlin"); }
         }
         if ("addTask".equals(e.getActionCommand())) {
             TaskTemplateEditor tte = new TaskTemplateEditor(false);
