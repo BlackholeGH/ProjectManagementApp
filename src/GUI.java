@@ -57,6 +57,7 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
         });
     }
 
+    //Updates project lists on viewport screen
     public void updateDisplay()
     {
         String pName = (String)projectList.getSelectedValue();

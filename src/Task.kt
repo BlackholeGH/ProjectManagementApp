@@ -5,6 +5,7 @@ var taskIDCount : Long = 0
 val templateTasks = mutableMapOf<String, Task?>();
 
 class Task (val taskName : String, var taskDescription : String, val taskLength : Long) {
+    //Calculating the task duration
     companion object {
         fun getLengthAsReadableTime(timeLength : Long) : String {
             var timeOut : String = (timeLength % 60).toString() + " second" + if(timeLength % 60 != 1L) { "s " } else { " " }
