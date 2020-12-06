@@ -1,3 +1,4 @@
+import scala.collection.immutable.List
 import java.io.*
 
 val storedProjects = MutableList<Project?>(0) { i -> null }
@@ -43,8 +44,30 @@ class Project(var projectName: String) {
             }
         }
     }
+    private var remTime = 0L
+    private var criticalTasks = ArrayList<Task>()
+    private fun updateCritical()
+    {
+        if (GUI.useKotlinCriticalPath)
+        {
+            val r = KotlinCriticalPathTracer().returnTimeRemainingByCritPath(this)
+            remTime = r[0] as Long
+            criticalTasks = r[1] as ArrayList<Task>
+        }
+        else
+        {
+            val r = GUI.accessScala(this)
+            remTime = r[0] as Long
+            criticalTasks = ArrayList<Task>((r[1] as Array<Task>).toMutableList())
+        }
+    }
     fun getRemainingTime() : Long {
-        return if (GUI.useKotlinCriticalPath) KotlinCriticalPathTracer().returnTimeRemainingByCritPath(this) else GUI.accessScala(this)
+        updateCritical()
+        return remTime
+    }
+    fun getCriticalPathTasks() : ArrayList<Task> {
+        updateCritical()
+        return criticalTasks
     }
     fun persistenceString() : String {
         val sanitize = { s: String -> s.replace("#", "[HASH]") }

@@ -2,6 +2,8 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.DefaultCaret;
+import javax.swing.text.DefaultHighlighter;
+import javax.swing.text.Highlighter;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Hashtable;
@@ -26,7 +28,7 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
     private JScrollPane jspMainProjectDisplay;
     public static Boolean useKotlinCriticalPath = true;
 
-    public static Long accessScala(Project project)
+    public static Object[] accessScala(Project project)
     {
         return new ScalaCriticalPathTracer().returnTimeRemainingByCriticalPath(project);
     }
@@ -62,7 +64,20 @@ public class GUI extends JFrame implements ActionListener, KeyListener {
         {
             Project tp = ProjectKt.getStoredProjects().get(i);
             if(tp.getProjectName().equals(pName)) {
-                projectDetails.setText(tp.fullDisplayDetails());
+                String fullDisplay = tp.fullDisplayDetails();
+                projectDetails.setText(fullDisplay);
+                Highlighter criticalHighlighter = projectDetails.getHighlighter();
+                Highlighter.HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(Color.yellow);
+                for(int ii = 0; ii < tp.getCriticalPathTasks().size(); ii++)
+                {
+                    String tIDHighlightString = "Task ID: " + ((Task)tp.getCriticalPathTasks().get(ii)).getTaskID();
+                    int start = fullDisplay.indexOf(tIDHighlightString);
+                    int end = start + tIDHighlightString.length();
+                    try {
+                        criticalHighlighter.addHighlight(start, end, painter);
+                    }
+                    catch(Exception e) { }
+                }
                 DefaultCaret caret = (DefaultCaret)projectDetails.getCaret();
                 caret.setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
                 break;
