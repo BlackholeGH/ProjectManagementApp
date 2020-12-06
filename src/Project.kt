@@ -6,6 +6,7 @@ val storedProjects = MutableList<Project?>(0) { i -> null }
 class Project(var projectName: String) {
     companion object
     {
+        // The lambda function below maps the persistence strings to hash values
         fun decodePersistence(persistence: String) : Project
         {
             val data = persistence.split("#").map { s: String -> s.replace("[HASH]", "#") }
@@ -18,6 +19,8 @@ class Project(var projectName: String) {
                     outProject.taskTeam.put(task, task.taskTeam)
                 }
             }
+            // Passes a list of project tasks and each task has an ID to identify which task belongs to which
+            // project
             val taskMap = outProject.projectTasks.associateBy { t: Task? -> t!!.taskID }
             for(task in outProject.projectTasks)
             {
@@ -35,6 +38,8 @@ class Project(var projectName: String) {
             bw.write(projectsString)
             bw.close()
         }
+
+        // This companion object loads a project and gets split into different project objects
         fun loadProjects()
         {
             if(File("PMAProjects.txt").exists()) {
@@ -125,6 +130,10 @@ class Project(var projectName: String) {
             task.taskTeam = team
             taskTeam.putIfAbsent(task, team)
         }
+
+        // if preceding task is not null and project task contains preceding task, then preceding task adds the
+        // following task
+
         if(precedingTask != null && projectTasks.contains(precedingTask))
         {
             precedingTask.followingTasks.add(task)
@@ -157,6 +166,10 @@ class Project(var projectName: String) {
         }
         return teamsList as Array<Team>
     }
+
+
+    // getRootTask function finds all the tasks that do not have a preceding task and calculates the critical path by
+    // tracing the path from all root tasks.
     fun getRootTasks() : Array<Task>
     {
         val tasksList = MutableList<Task?>(0) { i -> null }

@@ -1,5 +1,7 @@
 class KotlinCriticalPathTracer {
     fun returnTimeRemainingByCritPath(project : Project) : Array<Any>
+    // This recursive function gets the root tasks and then traverses through the branches until it finds the value of
+    // the longest critical path.
     {
         var maxLen = 0L
         var pathTasks : ArrayList<Task> = ArrayList<Task>()
@@ -14,6 +16,8 @@ class KotlinCriticalPathTracer {
         }
         return arrayOf(maxLen as Any, pathTasks as Any)
     }
+    // Another recursive function which scans through all the tasks and finds the longest consecutive task from the
+    // chain
     private fun getLongestBranch(task : Task) : Array<Any>
     {
         var lengthValue = task.timeRemaining()
